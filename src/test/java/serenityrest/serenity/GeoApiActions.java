@@ -8,12 +8,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.core.IsCollectionContaining.hasItem;
 
-/**
- * Created by aleksandr on 11.02.17.
- */
-public class GeoApiSteps {
+public class GeoApiActions {
 
     @Step
     public void saveAddress(String adr){
@@ -24,18 +20,20 @@ public class GeoApiSteps {
     public void requestGeoCodeWithAddress(){
         Map<String, String> params = new HashMap<>();
         params.put("address", Serenity.getCurrentSession().get("address").toString());
-        params.put("key", "AIzaSyB4PSrUP4QOqUmfHllvisriD1kntiNiExE");
+        params.put("key", "AIzaSyA2fREIe1D2Y48aZ1QQiIcokpgrAHIZ8e0");
         SerenityRest.given().contentType("application/json")
                 .and().params(params)
                 .when().get("https://maps.googleapis.com/maps/api/geocode/json");
     }
 
     @Step
-    public void verifyLongitudeAndLatitude(float longitude, float latitude){
-        SerenityRest.then().
-                statusCode(200).
-                body("results.geometry.location.lat[0]", equalTo(latitude)).
-                body("results.geometry.location.lng[0]", equalTo(longitude));
+    public float getResponseLongitude(){
+        return SerenityRest.then().extract().body().jsonPath().get("results.geometry.location.lng[0]");
+    }
+
+    @Step
+    public float getResponseLatitude(){
+        return SerenityRest.then().extract().body().jsonPath().get("results.geometry.location.lat[0]");
     }
 
     @Step
@@ -44,10 +42,8 @@ public class GeoApiSteps {
     }
 
     @Step
-    public void verifyAddress(String address){
-        SerenityRest.then().
-                statusCode(200).
-                body("results.formatted_address[0]", equalTo(address));
+    public String getAddress(){
+        return SerenityRest.then().extract().body().jsonPath().get("results.formatted_address[0]");
     }
 
     @Step
@@ -58,5 +54,10 @@ public class GeoApiSteps {
         SerenityRest.given().contentType("application/json")
                 .and().params(params)
                 .when().get("https://maps.googleapis.com/maps/api/geocode/json");
+    }
+
+    @Step
+    public int getStatusCode(){
+        return SerenityRest.then().extract().statusCode();
     }
 }
